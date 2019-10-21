@@ -2,6 +2,7 @@ pragma solidity ^0.5.0;
 
 import "./DateTime.sol";
 import "../node_modules/@openzeppelin/contracts/math/SafeMath.sol";
+import "./Order.sol";
 
 contract GroceriesFast {
 
@@ -9,16 +10,25 @@ contract GroceriesFast {
 
     DateTime dateTime = new DateTime();
 
-    struct Item {
-        string product;
-        uint16 price; // Price in U$D
+    uint256 MIN_REWARD = 0.01 ether;
+
+    uint256 numOrders;
+    mapping(uint256 => address) orders;
+
+    event OrderCreated(string indexed _name, uint256 _id);
+
+    modifier checkReward(uint256 _reward) {
+        require(MIN_REWARD <= _reward, "Reward must be at least 0.01 ether.");
+        _;
     }
 
-    struct Order {
-        Item item;
-        uint256 reward; // Reward in Wei
-        string name; // Order Request Name
-        uint256 creation;
-        uint256 expiration;
+    function CreateOrder(string memory name, uint256 reward) public checkReward(reward) returns (uint256 _id) {
+        Order newOrder = new Order(name, reward, numOrders, msg.sender);
+        orders[numOrders] = address(newOrder);
+        _id = numOrders;
+
+        numOrders = numOrders.add(1);
+
+        emit OrderCreated(name, _id);
     }
 }
