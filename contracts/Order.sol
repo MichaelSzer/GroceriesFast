@@ -17,15 +17,24 @@ contract Order {
     bool public completed;
     Item[] public items;
 
-    modifier onlyOwner(address addr){
-        require(owner == addr, "Only the owner can call this function.");
-        _;
-    }
-
     constructor(string memory _name, uint256 _reward, uint256 _id, address _owner) public {
         name = _name;
         reward = _reward;
         id = _id;
         owner = _owner;
+        creation = now;
+    }
+
+    modifier onlyOwner(address addr){
+        require(owner == addr, "Only the owner can call this function.");
+        _;
+    }
+
+    function getNumberOfItems() public view returns (uint256) {
+        return items.length;
+    }
+
+    function addItem(string memory product, uint16 price, address sender) public onlyOwner(sender) {
+        items.push(Item(product, price));
     }
 }
