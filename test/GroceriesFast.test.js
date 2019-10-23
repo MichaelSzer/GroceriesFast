@@ -25,7 +25,7 @@ contract("GroceriesFast", accounts => {
 
         const order = new web3.eth.Contract(Order.abi, orderAdrress);
 
-        await order.methods.addItem("Milk", 5, accounts[0]).send({ from: accounts[0] });
+        await order.methods.addItem("Milk", 5).send({ from: accounts[0] });
         let item = await order.methods.items(0).call();
 
         assert.equal(item.product, "Milk", "item's product should be 'Milk'");
