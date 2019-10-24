@@ -18,7 +18,6 @@ contract Order {
     uint256 public id;
     uint256 public cost;
     string public name; // Order Request Name
-    bool public completed;
     bool public ongoing;
     bool public started;
     Item[] public items;
@@ -45,7 +44,7 @@ contract Order {
         _;
     }
 
-    modifier isOrderOngoing {
+    modifier orderOngoing {
         require(ongoing, "This order is not ongoing.");
         _;
     }
@@ -59,7 +58,7 @@ contract Order {
         return items.length;
     }
 
-    function addItem(string memory product, uint16 price) public onlyOwner isOrderOngoing {
+    function addItem(string memory product, uint16 price) public onlyOwner orderOngoing {
         require(bytes(product).length > 0, "Product must have a name.");
         require(price > 0, 'Price must be greater than 0.');
 
@@ -69,7 +68,12 @@ contract Order {
         emit ItemAdded(product, price);
     }
 
-    function startOrder() public orderNotStarted orderReady {
+    function cancelOrder() public orderOngoing orderNotStarted {
+        msg.sender.transfer(address(this).balance);
+        ongoing = false;
+    }
+
+    function startOrder() public orderOngoing orderNotStarted orderReady {
         started = true;
     }
 

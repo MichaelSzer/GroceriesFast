@@ -11,9 +11,10 @@ contract GroceriesFast {
     DateTime dateTime = new DateTime();
 
     uint256 MIN_REWARD = 0.01 ether;
-
     uint256 numOrders;
     mapping(uint256 => address) orders;
+    address owner;
+    bool finished;
 
     event OrderCreated(string _name, uint256 indexed _id);
 
@@ -22,7 +23,21 @@ contract GroceriesFast {
         _;
     }
 
-    function createOrder(string memory name, uint256 reward) public checkReward(reward) returns (uint256 _id) {
+    modifier onlyOwner {
+        require(owner == msg.sender, "This function can only be called by the owner of the contract");
+        _;
+    }
+
+    modifier finishedContract {
+        require(!finished, "Contract was finished.");
+        _;
+    }
+
+    constructor() public {
+        owner = msg.sender;
+    }
+
+    function createOrder(string memory name, uint256 reward) public finishedContract checkReward(reward) returns (uint256 _id) {
         Order newOrder = new Order(name, reward, numOrders, msg.sender);
         orders[numOrders] = address(newOrder);
         _id = numOrders;
@@ -34,5 +49,9 @@ contract GroceriesFast {
 
     function getOrderAddress(uint256 id) public view returns (address) {
         return orders[id];
+    }
+
+    function finishContract() public onlyOwner {
+        finished = true;
     }
 }
